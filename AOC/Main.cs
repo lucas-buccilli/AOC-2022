@@ -9,7 +9,8 @@ namespace AOC
         static readonly Dictionary<String, Day> dayMap = new Dictionary<String, Day>()
         {
             {"day2", new Day2.Executor()},
-            {"day3", new Day3.Executor()}
+            {"day3", new Day3.Executor()},
+            {"day4", new Day4.Executor()}
         };
 
         static void Main(string[] args)
