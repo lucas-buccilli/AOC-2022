@@ -5,7 +5,7 @@ namespace Day2
 {
     public class Executor : Day
     {
-        public override string execute(string input)
+        public override string part2(string input)
         {
             IEnumerable<String> hands = input.Split("\n");
 
@@ -89,6 +89,11 @@ namespace Day2
             {
                 return Outcome.Draw;
             }
+        }
+
+        public override string part1(string input)
+        {
+            throw new NotImplementedException();
         }
 
         static readonly Dictionary<RPS, RPS> beats = new()

@@ -7,7 +7,8 @@ namespace Days
         {
 
         }
-        abstract public String execute(String input);
+        abstract public String part1(String input);
+        abstract public String part2(String input);
     }
 }
 
