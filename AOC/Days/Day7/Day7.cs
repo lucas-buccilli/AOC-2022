@@ -14,12 +14,11 @@ namespace Day7
         {
             Folder root = generateFolderStructure(input);
 
-            var folder = getAllSubFolders(root);
-            folder.Add(root);
+            var directories = getAllSubFolders(root);
+            directories.Add(root);
 
-            return folder
-                .Select(x => new { name = x.name, size = x.getSize() })
-                .Select(x => x.size)
+            return directories
+                .Select(x => x.getSize())
                 .Where(x => x <= 100000)
                 .Sum()
                 .ToString();
@@ -30,50 +29,38 @@ namespace Day7
         public override string part2(string input)
         {
             Folder root = generateFolderStructure(input);
-
-            var folder = getAllSubFolders(root);
-            folder.Add(root);
-
-            var folderSize = folder
-                .Select(x => new { name = x.name, size = x.getSize() })
-                .ToList();
-
             var freeSpace = 70000000 - root.getSize();
 
-            return folderSize
-                .Where(x => freeSpace + x.size >= 30000000)
-                .OrderBy(x => x.size)
+            var directories = getAllSubFolders(root);
+            directories.Add(root);
+
+            return directories
+                .Select(x => x.getSize())
+                .Where(x => freeSpace + x >= 30000000)
+                .Order()
                 .First()
-                .size
                 .ToString();
         }
 
         private static Folder generateFolderStructure(string input)
         {
             var lines = input.Split("\n");
-            Folder? currentOperatingFolder = null;
-            foreach (var line in lines)
+            Folder root = new Folder("/");
+            Folder currentOperatingFolder = root;
+            foreach (var line in lines.Skip(1))
             {
                 switch (line)
                 {
-                    case var commandString when Regex.IsMatch(line, @"^\$.+$"):
-                        var commandMatch = Regex.Match(commandString, @"^\$\s([a-zA-Z]+)(\s(.+))?$");
-                        var command = commandMatch.Groups[1].Value;
-                        if (command == "cd")
+                    case var commandString when Regex.IsMatch(line, @"^\$\scd.+$"):
+                        var commandMatch = Regex.Match(commandString, @"^\$\scd\s(.+)$");
+                        var directory = commandMatch.Groups[1].Value;
+                        if (directory == "..")
                         {
-                            var directory = commandMatch.Groups[3].Value;
-                            if (directory == "/" && currentOperatingFolder == null)
-                            {
-                                currentOperatingFolder = new Folder("/");
-                            }
-                            else if (directory == "..")
-                            {
-                                currentOperatingFolder = currentOperatingFolder.parent;
-                            }
-                            else
-                            {
-                                currentOperatingFolder = currentOperatingFolder.children.OfType<Folder>().Single(x => x.name == directory);
-                            }
+                            currentOperatingFolder = currentOperatingFolder.getParent();
+                        }
+                        else
+                        {
+                            currentOperatingFolder = currentOperatingFolder.children.OfType<Folder>().Single(x => x.name == directory);
                         }
 
                         break;
@@ -83,7 +70,7 @@ namespace Day7
 
                         currentOperatingFolder.children.Add(new Folder(folderName, currentOperatingFolder));
                         break;
-                    case var fileString when Regex.IsMatch(line, @"^[0-9]+ .+$"):
+                    case var fileString when Regex.IsMatch(line, @"^[0-9]+\s.+$"):
                         var fileMatch = Regex.Match(fileString, @"^([0-9]+)\s(.+)$");
                         var fileSize = int.Parse(fileMatch.Groups[1].Value);
                         var fileName = fileMatch.Groups[2].Value;
@@ -96,12 +83,7 @@ namespace Day7
             }
 
 
-            while (currentOperatingFolder.parent != null)
-            {
-                currentOperatingFolder = currentOperatingFolder.parent;
-            }
-
-            return currentOperatingFolder;
+            return root;
         }
 
         private List<Folder> getAllSubFolders(Folder root)
@@ -119,7 +101,7 @@ namespace Day7
 
         private class Folder : FileSystemObject
         {
-            public List<FileSystemObject> children = new List<FileSystemObject>();
+            public List<FileSystemObject> children { get; } = new List<FileSystemObject>();
 
             public Folder(String name, Folder parent) : base(name, parent) { }
 
@@ -133,7 +115,7 @@ namespace Day7
 
         private class File : FileSystemObject
         {
-            public int size;
+            public int size { get; set; }
 
             public File(String name, Folder parent, int size) : base(name, parent)
             {
@@ -148,6 +130,10 @@ namespace Day7
 
         abstract class FileSystemObject
         {
+
+            public String name { get; set; }
+            private readonly Folder? parent;
+
             protected FileSystemObject(String name, Folder parent)
             {
                 this.name = name;
@@ -159,10 +145,12 @@ namespace Day7
                 this.name = name;
             }
 
-            public String name;
-            public Folder? parent;
-
             public abstract int getSize();
+
+            public Folder getParent()
+            {
+                return parent != null ? parent : throw new ArgumentException();
+            }
         }
     }
 
