@@ -12,7 +12,8 @@ namespace AOC
             {"day3", new Day3.Executor()},
             {"day4", new Day4.Executor()},
             {"day5", new Day5.Executor()},
-            {"day6", new Day6.Executor()}
+            {"day6", new Day6.Executor()},
+            {"day7", new Day7.Executor()}
         };
 
         static void Main(string[] args)
