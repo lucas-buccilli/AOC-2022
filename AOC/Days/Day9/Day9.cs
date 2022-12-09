@@ -11,22 +11,23 @@ namespace Day9
 
         public override string part1(string input)
         {
-            IEnumerable<Command> commands = input
-                .Split("\n")
-                .Select(x => parseCommand(x));
+            var numberOfKnots = 2;
+            var maxDistanceBetweenKnots = 2;
 
-            var head = new Knot(0, 0);
-            var tail = new Knot(0, 0);
+            IEnumerable<Command> commands = input
+            .Split("\n")
+            .Select(x => ParseCommand(x));
+            Knot[] knots = GetKnots(numberOfKnots);
 
             HashSet<string> tailCoordinates = new HashSet<string>();
 
-            foreach(var command in commands)
+            foreach (var command in commands)
             {
-                for(var i = 0; i < command.distance; i++)
+                for (var i = 0; i < command.distance; i++)
                 {
-                    head.Move(command.direction);
-                    tail.MoveToKnot(head, 2);
-                    tailCoordinates.Add($"{tail.coordinate.x}, {tail.coordinate.y}");
+                    MoveRope(knots, command, maxDistanceBetweenKnots);
+
+                    tailCoordinates.Add($"{knots.Last().coordinate.x}, {knots.Last().coordinate.y}");
                 }
             }
 
@@ -36,20 +37,13 @@ namespace Day9
 
         public override string part2(string input)
         {
-            IEnumerable<Command> commands = input
-            .Split("\n")
-            .Select(x => parseCommand(x));
+            var numberOfKnots = 9;
+            var maxDistanceBetweenKnots = 2;
 
-            var head = new Knot(0, 0);
-            var one = new Knot(0, 0);
-            var two = new Knot(0, 0);
-            var three = new Knot(0, 0);
-            var four = new Knot(0, 0);
-            var five = new Knot(0, 0);
-            var six = new Knot(0, 0);
-            var seven = new Knot(0, 0);
-            var eight = new Knot(0, 0);
-            var tail = new Knot(0, 0);
+            IEnumerable<Command> commands = input
+                .Split("\n")
+                .Select(x => ParseCommand(x));
+            Knot[] knots = GetKnots(numberOfKnots);
 
             HashSet<string> tailCoordinates = new HashSet<string>();
 
@@ -57,17 +51,9 @@ namespace Day9
             {
                 for (var i = 0; i < command.distance; i++)
                 {
-                    head.Move(command.direction);
-                    one.MoveToKnot(head, 2);
-                    two.MoveToKnot(one, 2);
-                    three.MoveToKnot(two, 2);
-                    four.MoveToKnot(three, 2);
-                    five.MoveToKnot(four, 2);
-                    six.MoveToKnot(five, 2);
-                    seven.MoveToKnot(six, 2);
-                    eight.MoveToKnot(seven, 2);
-                    tail.MoveToKnot(eight, 2);
-                    tailCoordinates.Add($"{tail.coordinate.x}, {tail.coordinate.y}");
+                    MoveRope(knots, command, maxDistanceBetweenKnots);
+
+                    tailCoordinates.Add($"{knots.Last().coordinate.x}, {knots.Last().coordinate.y}");
                 }
             }
 
@@ -75,7 +61,28 @@ namespace Day9
             return tailCoordinates.Count().ToString();
         }
 
-        private Command parseCommand(String line)
+        private static void MoveRope(Knot[] knots, Command command, int maxDistanceBetweenKnots)
+        {
+            knots.First().Move(command.direction);
+            for (int j = 1; j < knots.Length; j++)
+            {
+                knots[j].MoveTowardsKnot(knots[j - 1], maxDistanceBetweenKnots);
+            }
+        }
+
+        private static Knot[] GetKnots(int numberOfKnots)
+        {
+            var knots = new Knot[numberOfKnots];
+            for (var i = 0; i < numberOfKnots; i++)
+            {
+                knots[i] = new Knot(0, 0);
+            }
+
+            return knots;
+        }
+
+
+        private Command ParseCommand(String line)
         {
             var match = Regex.Match(line, @"^([RLDU])\s([\d]+)");
             var direction = ParseDirection(match.Groups[1].Value);
@@ -122,7 +129,7 @@ namespace Day9
                 };
             }
 
-            public void MoveToKnot(Knot knot, int maxDistance)
+            public void MoveTowardsKnot(Knot knot, int maxDistance)
             {
                 var xDiff = knot.coordinate.x - coordinate.x;
                 var yDiff = knot.coordinate.y - coordinate.y;
