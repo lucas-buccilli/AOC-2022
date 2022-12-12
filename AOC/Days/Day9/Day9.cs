@@ -136,7 +136,7 @@ namespace Day9
                 Direction? xMove = null;
                 Direction? yMove = null;
 
-                //handle potential diagnal
+                //handle potential diagonal
                 if (xDiff != 0 && yDiff != 0)
                 {
                     if (int.Abs(xDiff) >= maxDistance)
